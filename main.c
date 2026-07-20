@@ -10,7 +10,7 @@
 State_t state;
 
 unsigned char key_pressed;
-extern unsigned char event_count;
+extern uint32_t event_count;
 
 void init_config() {
     state = e_dashboard;

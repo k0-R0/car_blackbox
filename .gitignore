@@ -1,0 +1,19 @@
+# MPLAB X generated build outputs
+build/
+dist/
+disassembly/
+
+# IDE User-Specific Settings
+nbproject/private/
+nbproject/Makefile-variables.mk
+.generated_files/
+
+# Temporary files
+*.p1
+*.d
+*.o
+*.elf
+*.hex
+*.map
+*.lst
+*.sym

@@ -42,7 +42,7 @@ void read_gear(unsigned char address, unsigned char curr_event) {
 //problem with event count, how do you know array is full or count is actual
 //size
 
-void store_event_count(unsigned char num) {
+void store_event_count(uint32_t num) {
     unsigned char address = 120;
     for (char i = 0; i < 4; i++) {
         write_external_eeprom(address + i, num);
@@ -54,8 +54,8 @@ void read_event_count(void) {
     unsigned char address = 120;
     event_count = 0;
     for (char i = 0; i < 4; i++) {
-        event_count <<= 8;
-        event_count |= read_external_eeprom(address + i);
+        unsigned char byte = read_external_eeprom(address + i);
+        event_count |= (byte << (8 * i));
     }
 }
 
@@ -74,7 +74,6 @@ void event_store(void) {
     store_gear(address + 8);
     store_speed(address + 10);
     store_event_count(event_count);
-
 }
 
 //View log function declaration

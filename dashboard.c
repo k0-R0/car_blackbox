@@ -8,7 +8,7 @@
 #include "blackbox.h"
 
 
-unsigned char event_count;
+uint32_t event_count;
 uint16_t speed;
 unsigned char speed_buffer[3];
 
