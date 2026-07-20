@@ -1,6 +1,6 @@
 #include "blackbox.h"
 
-extern unsigned char event_count;
+extern uint32_t event_count;
 extern unsigned char time[9];
 extern unsigned char speed_buffer[3];
 extern unsigned char gear_buffer[3];
@@ -28,16 +28,19 @@ void store_gear(unsigned char address) {
 void read_time(unsigned char address, unsigned char curr_event) {
     for (int i = 0; i < 8; i++)
         stored_time[curr_event][i] = read_external_eeprom(address + i);
+    stored_time[curr_event][8] = '\0';
 }
 
 void read_speed(unsigned char address, unsigned char curr_event) {
     for (int i = 0; i < 2; i++)
         stored_speed_buffer[curr_event][i] = read_external_eeprom(address + i);
+    stored_speed_buffer[curr_event][2] = '\0';
 }
 
 void read_gear(unsigned char address, unsigned char curr_event) {
     for (int i = 0; i < 2; i++)
         stored_gear_buffer[curr_event][i] = read_external_eeprom(address + i);
+    stored_gear_buffer[curr_event][2] = '\0';
 }
 //problem with event count, how do you know array is full or count is actual
 //size
@@ -76,6 +79,18 @@ void event_store(void) {
     store_event_count(event_count);
 }
 
+//Reading events function declaration
+
+void event_reader(unsigned char curr_event) {
+    for (int i = 0; i < 10; i++) {
+        unsigned char address = ((curr_event + i) % 10) * 12;
+        read_time(address, i);
+        read_gear(address + 8, i);
+        read_speed(address + 10, i);
+    }
+    read_event_count();
+}
+
 //View log function declaration
 //event reader getting called multiple times, when it only needs to populate data once.
 
@@ -101,28 +116,18 @@ void view_log(void) {
     clcd_print(stored_time[curr_event], LINE2(2));
     clcd_print(stored_speed_buffer[curr_event], LINE2(14));
     clcd_print(stored_gear_buffer[curr_event], LINE2(11));
-    if (key_pressed == MK_SW2 && curr_event < limit)
+    if (key_pressed == MK_SW2 && curr_event < (limit - 1))
         curr_event++;
     else if (key_pressed == MK_SW1 && curr_event > 0)
         curr_event--;
     else if (key_pressed == MK_SW12) {
         CLEAR_DISP_SCREEN;
+        once = 1;
         state = e_main_menu;
         return;
     }
 }
 
-//Reading events function declaration
-
-void event_reader(unsigned char curr_event) {
-    for (int i = 0; i < 10; i++) {
-        unsigned char address = ((curr_event + i) % 10) * 12;
-        read_time(address, i);
-        read_speed(address + 8, i);
-        read_gear(address + 10, i);
-    }
-    read_event_count();
-}
 
 //Set time function declaration
 
@@ -133,34 +138,50 @@ void set_time(void) {
 //Download log function _decleration
 
 void download_log(void) {
-    uart_transmit_str("Log count : \n\r");
-    char buffer[11];
-    itostr(buffer, event_count);
-    uart_transmit_str(buffer);
-    uart_transmit_str("\n\rLN TIME     GR SP\n\r");
-    for (int i = 0; i < event_count % 10; i++) {
-        uart_transmit_char('0' + i);
-        uart_transmit_str(". ");
-        uart_transmit_str(stored_time[i]);
-        uart_transmit_char(' ');
-        uart_transmit_str(stored_speed_buffer[i]);
-        uart_transmit_char(' ');
-        uart_transmit_str(stored_gear_buffer[i]);
-        uart_transmit_str("\n\r");
+    static uint16_t delay = 0;
+    static unsigned char once = 1;
+    if (delay++ == 0) {
+        if (once) {
+            event_reader(event_count % 10);
+            once = 0;
+        }
+        uart_transmit_str("Log count : \n\r");
+        char buffer[11];
+        itostr(buffer, event_count);
+        uart_transmit_str(buffer);
+        uart_transmit_str("\n\rLN TIME     GR SP\n\r");
+        unsigned char limit = event_count > 10 ? 10 : event_count;
+        for (int i = 0; i < limit; i++) {
+            uart_transmit_char('0' + i);
+            uart_transmit_str(". ");
+            uart_transmit_str(stored_time[i]);
+            uart_transmit_char(' ');
+            uart_transmit_str(stored_speed_buffer[i]);
+            uart_transmit_char(' ');
+            uart_transmit_str(stored_gear_buffer[i]);
+            uart_transmit_str("\n\r");
+        }
+        clcd_print("DOWNLOAD SUCCESS", LINE1(0));
+    } else if (delay > 3000) {
+        delay = 0;
+        once = 1;
+        state = e_main_menu;
+        CLEAR_DISP_SCREEN;
     }
-    clcd_print("DOWNLOAD SUCCESS", LINE1(0));
-    __delay_ms(3000);
-    state = e_main_menu;
-    CLEAR_DISP_SCREEN;
 }
 
 //Clear log function declaration
 
 void clear_log(void) {
+    static uint16_t delay = 0;
     event_count = 0;
-    clcd_print("CLEAR SUCCESS", LINE1(0));
-    __delay_ms(3000);
-    state = e_main_menu;
-    CLEAR_DISP_SCREEN;
+    if (delay++ == 0) {
+        clcd_print("CLEAR SUCCESS", LINE1(0));
+        store_event_count(event_count);
+    } else if (delay > 3000) {
+        delay = 0;
+        state = e_main_menu;
+        CLEAR_DISP_SCREEN;
+    }
 }
 
