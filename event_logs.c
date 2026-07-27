@@ -128,14 +128,86 @@ void view_log(void) {
     }
 }
 
-
 //Set time function declaration
 
-void set_time(void) {
-
+void increment_seconds(void) {
+    int sec = (time[6] - '0') * 10 + time[7] - '0';
+    sec = (sec + 1) % 60;
+    time[6] = (sec / 10) + '0';
+    time[7] = (sec % 10) + '0';
 }
 
-//Download log function _decleration
+void increment_minutes(void) {
+    int min = (time[3] - '0')* 10 + time[4] - '0';
+    min = (min + 1) % 60;
+    time[3] = (min / 10) + '0';
+    time[4] = (min % 10) + '0';
+}
+
+void increment_hours(void) {
+    char hrs = (time[0] - '0') * 10 + time[1] - '0';
+    hrs = (hrs + 1) % 24;
+    time[0] = (hrs / 10) + '0';
+    time[1] = (hrs % 10) + '0';
+}
+
+void set_time(void) {
+    //use a time buffer to store updated time
+    //blink in seconds, minutes & hours
+    static unsigned char update_flag = 1;
+    static unsigned int delay = 0;
+    static unsigned char once = 1;
+    if (once) {
+        //get time from RTC
+        get_time();
+        once = 0;
+        delay = 0;
+        update_flag = 1;
+    }
+    if (++delay > 500) {
+        switch (update_flag) {
+            case 1: clcd_print("  ", LINE2(6));
+                break;
+            case 2: clcd_print("  ", LINE2(3));
+                break;
+            case 4: clcd_print("  ", LINE2(0));
+                break;
+        }
+        if (delay > 1000)
+            delay = 0;
+    } else {
+        clcd_print(time, LINE2(0));
+    }
+    if (key_pressed == MK_SW1) {
+        switch (update_flag) {
+            case 1: increment_seconds();
+                break;
+            case 2: increment_minutes();
+                break;
+            case 4: increment_hours();
+                break;
+        }
+    } else if (key_pressed == MK_SW2) {
+        if (update_flag == 4)
+            update_flag = 1;
+        else
+            update_flag <<= 1;
+    } else if (key_pressed == MK_SW11) {
+        //on save write time to RTC
+        //convert time to BCD
+        //write to ds1307
+        //exit to main menu 
+        once = 1;
+        state = e_main_menu;
+        CLEAR_DISP_SCREEN;
+    } else if (key_pressed == MK_SW12) {
+        once = 1;
+        state = e_main_menu;
+        CLEAR_DISP_SCREEN;
+    }
+}
+
+//Download log function _declaration
 
 void download_log(void) {
     static uint16_t delay = 0;
