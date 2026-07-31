@@ -63,11 +63,12 @@ void i2c_rx_mode(void) {
 void i2c_no_ack(void) {
     ACKDT = 1;
     ACKEN = 1;
+    i2c_idle();
 }
 
 unsigned char i2c_read(void) {
     i2c_rx_mode();
     i2c_no_ack();
-
+    
     return SSPBUF;
 }

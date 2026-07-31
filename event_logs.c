@@ -58,7 +58,7 @@ void read_event_count(void) {
     event_count = 0;
     for (char i = 0; i < 4; i++) {
         unsigned char byte = read_external_eeprom(address + i);
-        event_count |= (byte << (8 * i));
+        event_count |= ((uint32_t)byte << (8 * i));
     }
 }
 
@@ -109,13 +109,14 @@ void view_log(void) {
     }
     int limit = event_count > 10 ? 10 : event_count;
     if (once) {
+        curr_event = 0;
         event_reader(event_count % 10);
         once = 0;
     }
     clcd_putch('0' + curr_event, LINE2(0));
     clcd_print(stored_time[curr_event], LINE2(2));
-    clcd_print(stored_speed_buffer[curr_event], LINE2(14));
-    clcd_print(stored_gear_buffer[curr_event], LINE2(11));
+    clcd_print(stored_speed_buffer[curr_event], LINE2(11));
+    clcd_print(stored_gear_buffer[curr_event], LINE2(14));
     if (key_pressed == MK_SW2 && curr_event < (limit - 1))
         curr_event++;
     else if (key_pressed == MK_SW1 && curr_event > 0)

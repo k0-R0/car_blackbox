@@ -53,7 +53,7 @@ void load_gear_buffer(char *gear_buffer) {
 
 void view_dashboard(void) {
     clcd_print("Time     GR  SP", LINE1(0));
-    static unsigned char prev_gear = 10;
+    static unsigned char prev_gear = 0;
 
     get_time();
     display_time();

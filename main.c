@@ -25,6 +25,10 @@ void init_config() {
 void main(void) {
     init_config();
     read_event_count();
+    if(event_count == 0xFFFFFFFF){
+        event_count = 0;
+        store_event_count(0);
+    }
     while (1) {
         // Detect key press
         key_pressed = read_switches(STATE_CHANGE);
