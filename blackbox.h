@@ -44,7 +44,7 @@ void display_main_menu(void);
 void view_log(void);
 
 //Reading events function declaration
-void event_reader(unsigned char );
+void event_reader(void);
 
 //Set time function declaration
 void set_time(void);

@@ -81,9 +81,10 @@ void event_store(void) {
 
 //Reading events function declaration
 
-void event_reader(unsigned char curr_event) {
+void event_reader(void) {
+    unsigned char start_slot = (event_count < 10) ? 0 : (event_count % 10);
     for (int i = 0; i < 10; i++) {
-        unsigned char address = ((curr_event + i) % 10) * 12;
+        unsigned char address = ((start_slot + i) % 10) * 12;
         read_time(address, i);
         read_gear(address + 8, i);
         read_speed(address + 10, i);
@@ -110,7 +111,7 @@ void view_log(void) {
     int limit = event_count > 10 ? 10 : event_count;
     if (once) {
         curr_event = 0;
-        event_reader(event_count % 10);
+        event_reader();
         once = 0;
     }
     clcd_putch('0' + curr_event, LINE2(0));
@@ -222,6 +223,7 @@ void set_time(void) {
         state = e_main_menu;
         CLEAR_DISP_SCREEN;
     }
+    __delay_ms(1);
 }
 
 //Download log function _declaration
@@ -231,7 +233,7 @@ void download_log(void) {
     static unsigned char once = 1;
     if (delay++ == 0) {
         if (once) {
-            event_reader(event_count % 10);
+            event_reader();
             once = 0;
         }
         uart_transmit_str("Log count : \n\r");
