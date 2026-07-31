@@ -205,9 +205,9 @@ void set_time(void) {
         set_m = (time[3] - '0') * 10 + (time[4] - '0');
         set_s = (time[6] - '0') * 10 + (time[7] - '0');
         //write to ds1307
-        write_ds1307(HOUR_ADDR, set_h);
-        write_ds1307(MIN_ADDR, set_m);
-        write_ds1307(SEC_ADDR, set_s);
+        write_ds1307(HOUR_ADDR, dec_to_bcd(set_h));
+        write_ds1307(MIN_ADDR, dec_to_bcd(set_m));
+        write_ds1307(SEC_ADDR, dec_to_bcd(set_s));
 
         CLEAR_DISP_SCREEN;
         clcd_print("TIME SET OK", LINE1(0));

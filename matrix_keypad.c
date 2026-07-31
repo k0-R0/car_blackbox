@@ -8,9 +8,6 @@
 #include "matrix_keypad.h"
 
 void init_matrix_keypad(void) {
-    /* Config PORTB as digital */
-    ADCON1 = 0x0F;
-
     /* Set Rows (RB7 - RB5) as Outputs and Columns (RB4 - RB1) as Inputs */
     TRISB = 0x1E;
 
