@@ -30,7 +30,6 @@ void display_main_menu() {
             case 3: state = e_clear_log; break;
             default: state = e_main_menu;
         }
-        clcd_putch('0' + curr_option, LINE2(13));
         CLEAR_DISP_SCREEN;
         return;
     }

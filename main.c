@@ -25,7 +25,7 @@ void init_config() {
 void main(void) {
     init_config();
     read_event_count();
-    if(event_count == 0xFFFFFFFF){
+    if(event_count > 10000){
         event_count = 0;
         store_event_count(0);
     }

@@ -58,7 +58,7 @@ void read_event_count(void) {
     event_count = 0;
     for (char i = 0; i < 4; i++) {
         unsigned char byte = read_external_eeprom(address + i);
-        event_count |= ((uint32_t)byte << (8 * i));
+        event_count |= ((uint32_t) byte << (8 * i));
     }
 }
 
@@ -152,6 +152,10 @@ void increment_hours(void) {
     time[1] = (hrs % 10) + '0';
 }
 
+static unsigned char dec_to_bcd(unsigned char val) {
+    return ((val / 10) << 4 | (val % 10));
+}
+
 void set_time(void) {
     //use a time buffer to store updated time
     //blink in seconds, minutes & hours
@@ -195,8 +199,20 @@ void set_time(void) {
             update_flag <<= 1;
     } else if (key_pressed == MK_SW11) {
         //on save write time to RTC
+        unsigned char set_h, set_m, set_s;
         //convert time to BCD
+        set_h = (time[0] - '0') * 10 + (time[1] - '0');
+        set_m = (time[3] - '0') * 10 + (time[4] - '0');
+        set_s = (time[6] - '0') * 10 + (time[7] - '0');
         //write to ds1307
+        write_ds1307(HOUR_ADDR, set_h);
+        write_ds1307(MIN_ADDR, set_m);
+        write_ds1307(SEC_ADDR, set_s);
+
+        CLEAR_DISP_SCREEN;
+        clcd_print("TIME SET OK", LINE1(0));
+        __delay_ms(1000);
+
         //exit to main menu 
         once = 1;
         state = e_main_menu;
