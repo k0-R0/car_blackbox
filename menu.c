@@ -5,13 +5,19 @@ extern unsigned char key_pressed;
 void display_main_menu() {
     //a flag to keep track of first entry so that first entry into menu starts
     //curr option with 0
+    
+    static unsigned char curr_option = 0;
+    static unsigned char once = 1;
+    if(once){
+        curr_option = 0;
+        once = 0;
+    }
     unsigned char menu_options[4][14] = {
-        "view logs    ",
-        "set time     ",
-        "download logs",
-        "clear logs   "
+        "VIEW LOGS    ",
+        "SET TIME     ",
+        "DOWNLOAD LOGS",
+        "CLEAR LOGS   "
     };
-    static unsigned char curr_option;
 
     if (key_pressed == MK_SW2 && curr_option < 3)
         curr_option++;
@@ -19,6 +25,7 @@ void display_main_menu() {
         curr_option--;
     else if (key_pressed == MK_SW12) {
         CLEAR_DISP_SCREEN;
+        once = 1;
         state = e_dashboard;
         return;
     }

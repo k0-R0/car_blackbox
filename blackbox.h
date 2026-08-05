@@ -57,4 +57,7 @@ void clear_log(void);
 
 //read event count stored in External EEPROM
 void read_event_count(void);
+
+//store event count stored in External EEPROM
+void store_event_count(uint32_t);
 #endif	/* BLACK_BOX_H */

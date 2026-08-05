@@ -100,7 +100,7 @@ void view_log(void) {
     clcd_print("LN Time    SP  GR", LINE1(0));
     static unsigned char curr_event;
     if (event_count == 0) {
-        clcd_print("No events logged", LINE2(0));
+        clcd_print("NO EVENTS LOGGED", LINE2(0));
         if (key_pressed == MK_SW12) {
             CLEAR_DISP_SCREEN;
             state = e_main_menu;
@@ -166,23 +166,24 @@ void set_time(void) {
     if (once) {
         //get time from RTC
         get_time();
+        clcd_print("SET TIME",LINE1(4));
         once = 0;
         delay = 0;
         update_flag = 1;
     }
     if (++delay > 500) {
         switch (update_flag) {
-            case 1: clcd_print("  ", LINE2(6));
+            case 1: clcd_print("  ", LINE2(10));
                 break;
-            case 2: clcd_print("  ", LINE2(3));
+            case 2: clcd_print("  ", LINE2(7));
                 break;
-            case 4: clcd_print("  ", LINE2(0));
+            case 4: clcd_print("  ", LINE2(4));
                 break;
         }
         if (delay > 1000)
             delay = 0;
     } else {
-        clcd_print(time, LINE2(0));
+        clcd_print(time, LINE2(4));
     }
     if (key_pressed == MK_SW1) {
         switch (update_flag) {
@@ -238,9 +239,9 @@ void download_log(void) {
         }
         uart_transmit_str("Log count : \n\r");
         char buffer[11];
-        itostr(buffer, event_count);
+        itostr(buffer, event_count < 10 ? event_count : 10);
         uart_transmit_str(buffer);
-        uart_transmit_str("\n\rLN TIME     GR SP\n\r");
+        uart_transmit_str("\n\rLN TIME     SP GR\n\r");
         unsigned char limit = event_count > 10 ? 10 : event_count;
         for (int i = 0; i < limit; i++) {
             uart_transmit_char('0' + i);
@@ -252,6 +253,9 @@ void download_log(void) {
             uart_transmit_str(stored_gear_buffer[i]);
             uart_transmit_str("\n\r");
         }
+        if(limit == 0){
+            uart_transmit_str("NO EVENTS LOGGED\n\r");
+        }
         clcd_print("DOWNLOAD SUCCESS", LINE1(0));
     } else if (delay > 3000) {
         delay = 0;
@@ -259,6 +263,7 @@ void download_log(void) {
         state = e_main_menu;
         CLEAR_DISP_SCREEN;
     }
+    __delay_ms(1);
 }
 
 //Clear log function declaration
@@ -274,5 +279,6 @@ void clear_log(void) {
         state = e_main_menu;
         CLEAR_DISP_SCREEN;
     }
+    __delay_ms(1);
 }
 
